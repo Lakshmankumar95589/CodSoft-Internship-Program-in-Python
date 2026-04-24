@@ -1,0 +1,138 @@
+import tkinter as tk
+from tkinter import messagebox
+
+# ---------------- CONTACT STORAGE ----------------
+contacts = {}
+
+
+# ---------------- FUNCTIONS ----------------
+def add_contact():
+    name = entry_name.get().strip()
+    phone = entry_phone.get().strip()
+    email = entry_email.get().strip()
+    address = entry_address.get().strip()
+
+    if name == "" or phone == "":
+        messagebox.showwarning("Input Error", "Name and Phone are required!")
+        return
+
+    if name in contacts:
+        messagebox.showwarning("Duplicate Error", "Contact already exists!")
+        return
+
+    contacts[name] = {
+        "phone": phone,
+        "email": email,
+        "address": address
+    }
+
+    messagebox.showinfo("Success", "Contact added successfully!")
+    clear_entries()
+    view_contacts()
+
+
+def view_contacts():
+    listbox_contacts.delete(0, tk.END)
+    for name, details in contacts.items():
+        listbox_contacts.insert(tk.END, f"{name}: {details['phone']}")
+
+
+def search_contact():
+    query = entry_search.get().strip()
+    listbox_contacts.delete(0, tk.END)
+
+    for name, details in contacts.items():
+        if query.lower() in name.lower() or query in details["phone"]:
+            listbox_contacts.insert(tk.END, f"{name}: {details['phone']}")
+
+
+def update_contact():
+    selected = listbox_contacts.get(tk.ACTIVE)
+
+    if not selected:
+        messagebox.showwarning("Error", "Please select a contact!")
+        return
+
+    name = selected.split(":")[0].strip()
+
+    if name in contacts:
+        contacts[name] = {
+            "phone": entry_phone.get().strip(),
+            "email": entry_email.get().strip(),
+            "address": entry_address.get().strip()
+        }
+
+        messagebox.showinfo("Success", "Contact updated successfully!")
+        clear_entries()
+        view_contacts()
+
+
+def delete_contact():
+    selected = listbox_contacts.get(tk.ACTIVE)
+
+    if not selected:
+        messagebox.showwarning("Error", "Please select a contact!")
+        return
+
+    name = selected.split(":")[0].strip()
+
+    if name in contacts:
+        del contacts[name]
+        messagebox.showinfo("Success", "Contact deleted successfully!")
+        view_contacts()
+
+
+def clear_entries():
+    entry_name.delete(0, tk.END)
+    entry_phone.delete(0, tk.END)
+    entry_email.delete(0, tk.END)
+    entry_address.delete(0, tk.END)
+
+
+# ---------------- GUI SETUP ----------------
+root = tk.Tk()
+root.title("Contact Manager")
+root.geometry("450x450")
+root.resizable(False, False)
+
+
+# Labels & Entries
+tk.Label(root, text="Name").grid(row=0, column=0)
+entry_name = tk.Entry(root)
+entry_name.grid(row=0, column=1)
+
+tk.Label(root, text="Phone").grid(row=1, column=0)
+entry_phone = tk.Entry(root)
+entry_phone.grid(row=1, column=1)
+
+tk.Label(root, text="Email").grid(row=2, column=0)
+entry_email = tk.Entry(root)
+entry_email.grid(row=2, column=1)
+
+tk.Label(root, text="Address").grid(row=3, column=0)
+entry_address = tk.Entry(root)
+entry_address.grid(row=3, column=1)
+
+
+# Buttons
+tk.Button(root, text="Add Contact", command=add_contact).grid(row=4, column=0, columnspan=2)
+tk.Button(root, text="Update Contact", command=update_contact).grid(row=5, column=0, columnspan=2)
+tk.Button(root, text="Delete Contact", command=delete_contact).grid(row=6, column=0, columnspan=2)
+
+
+# Listbox
+listbox_contacts = tk.Listbox(root, width=40)
+listbox_contacts.grid(row=7, column=0, columnspan=2)
+
+
+# Search
+entry_search = tk.Entry(root)
+entry_search.grid(row=8, column=0)
+
+tk.Button(root, text="Search", command=search_contact).grid(row=8, column=1)
+
+
+# Initial load
+view_contacts()
+
+root.mainloop()
