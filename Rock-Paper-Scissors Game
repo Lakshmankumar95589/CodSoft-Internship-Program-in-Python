@@ -1,0 +1,167 @@
+from tkinter import *
+from PIL import Image, ImageTk, ImageDraw, ImageFont
+from random import randint
+import os
+
+# 🔥 AUTO CREATE IMAGES (FIXED)
+def create_image(text, filename, color):
+    if not os.path.exists(filename):
+        img = Image.new('RGB', (200, 200), color=color)
+        draw = ImageDraw.Draw(img)
+
+        # font setup
+        try:
+            font = ImageFont.truetype("arial.ttf", 30)
+        except:
+            font = ImageFont.load_default()
+
+        # center text
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        x = (200 - text_width) // 2
+        y = (200 - text_height) // 2
+
+        draw.text((x, y), text, fill="white", font=font)
+        img.save(filename)
+
+# create images
+create_image("ROCK", "rock-user.png", "red")
+create_image("PAPER", "paper-user.png", "green")
+create_image("SCISSOR", "scissors-user.png", "blue")
+
+create_image("ROCK", "rock.png", "darkred")
+create_image("PAPER", "paper.png", "darkgreen")
+create_image("SCISSOR", "scissors.png", "darkblue")
+
+# main window
+root = Tk()
+root.title("Rock Scissor Paper")
+root.configure(background="light blue")
+root.geometry("700x500")
+
+# images load
+rock_img = ImageTk.PhotoImage(Image.open("rock-user.png"))
+paper_img = ImageTk.PhotoImage(Image.open("paper-user.png"))
+scissor_img = ImageTk.PhotoImage(Image.open("scissors-user.png"))
+
+rock_img_comp = ImageTk.PhotoImage(Image.open("rock.png"))
+paper_img_comp = ImageTk.PhotoImage(Image.open("paper.png"))
+scissor_img_comp = ImageTk.PhotoImage(Image.open("scissors.png"))
+
+# labels
+user_label = Label(root, image=scissor_img, bg="light blue")
+comp_label = Label(root, image=scissor_img_comp, bg="light blue")
+
+user_label.grid(row=2, column=4, padx=20, pady=20)
+comp_label.grid(row=2, column=0, padx=20, pady=20)
+
+# scores
+playerScore = Label(root, text=0, font=("Arial",20,"bold"), bg="light blue", fg="red")
+computerScore = Label(root, text=0, font=("Arial",20,"bold"), bg="light blue", fg="red")
+
+playerScore.grid(row=2, column=3)
+computerScore.grid(row=2, column=1)
+
+# buttons
+rock = Button(root, width=15, height=2, text="ROCK", bg="red", fg="white",
+              command=lambda: updateChoice("rock"))
+paper = Button(root, width=15, height=2, text="PAPER", bg="green", fg="white",
+               command=lambda: updateChoice("paper"))
+scissor = Button(root, width=15, height=2, text="SCISSOR", bg="blue", fg="white",
+                 command=lambda: updateChoice("scissor"))
+
+rock.grid(row=3, column=1, padx=10, pady=10)
+paper.grid(row=3, column=2, padx=10, pady=10)
+scissor.grid(row=3, column=3, padx=10, pady=10)
+
+# indicators
+user_indicator = Label(root, text="USER", font=("Arial",15,"bold"), bg="black", fg="white")
+computer_indicator = Label(root, text="COMPUTER", font=("Arial",15,"bold"), bg="black", fg="white")
+
+user_indicator.grid(row=1, column=3)
+computer_indicator.grid(row=1, column=1)
+
+# message
+msg = Label(root, text="", font=("Arial",15,"bold"), bg="red", fg="white", width=20)
+msg.grid(row=4, column=2, pady=10)
+
+# message update
+def updateMessage(x):
+    msg['text'] = x
+    if x == "You win":
+        msg.config(bg="green")
+    elif x == "You lose":
+        msg.config(bg="red")
+    else:
+        msg.config(bg="orange")
+
+# score update
+def updateUserScore():
+    score = int(playerScore["text"])
+    playerScore["text"] = str(score + 1)
+
+def updateCompScore():
+    score = int(computerScore["text"])
+    computerScore["text"] = str(score + 1)
+
+# winner logic
+def checkWin(player, computer):
+    if player == computer:
+        updateMessage("Its a tie!!!")
+    elif player == "rock":
+        if computer == "paper":
+            updateMessage("You lose")
+            updateCompScore()
+        else:
+            updateMessage("You win")
+            updateUserScore()
+    elif player == "paper":
+        if computer == "scissor":
+            updateMessage("You lose")
+            updateCompScore()
+        else:
+            updateMessage("You win")
+            updateUserScore()
+    elif player == "scissor":
+        if computer == "rock":
+            updateMessage("You lose")
+            updateCompScore()
+        else:
+            updateMessage("You win")
+            updateUserScore()
+
+# choices
+choices = ["rock", "paper", "scissor"]
+
+def updateChoice(x):
+    compChoice = choices[randint(0, 2)]
+
+    if compChoice == "rock":
+        comp_label.configure(image=rock_img_comp)
+    elif compChoice == "paper":
+        comp_label.configure(image=paper_img_comp)
+    else:
+        comp_label.configure(image=scissor_img_comp)
+
+    if x == "rock":
+        user_label.configure(image=rock_img)
+    elif x == "paper":
+        user_label.configure(image=paper_img)
+    else:
+        user_label.configure(image=scissor_img)
+
+    checkWin(x, compChoice)
+
+# reset
+def resetGame():
+    playerScore["text"] = "0"
+    computerScore["text"] = "0"
+    msg["text"] = "Game Reset"
+    msg.config(bg="blue")
+
+reset_btn = Button(root, text="RESET", bg="black", fg="white", command=resetGame)
+reset_btn.grid(row=4, column=3)
+
+root.mainloop()
